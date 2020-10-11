@@ -1,0 +1,67 @@
+version: 0.0
+os: linux
+
+## The circle CI build and the target to unzip it
+files:
+  - source: /
+    destination: /var/tmp/release
+
+#
+# The hooks section of the AppSpec file contains mappings that link
+# deployment lifecycle event hooks to one or more scripts.
+#
+# See https://docs.aws.amazon.com/codedeploy/latest/userguide/reference-appspec-file-structure-hooks.html
+#
+
+hooks:
+  #
+  # BeforeInstall - you can use the BeforeInstall deployment lifecycle
+  # event for preinstall tasks such as decrypting files and creating a
+  # backup of the current version.
+  #
+  BeforeInstall:
+    - location: scripts/before_install.sh
+      runas: root
+  #
+  # AfterInstall - you can use the AfterInstall deployment lifecycle
+  # event for tasks such as configuring your application or changing
+  # file permissions.
+  #
+  AfterInstall:
+    - location: scripts/after_install.sh
+      runas: root
+      timeout: 120
+  #
+  # ApplicationStart - you typically use the ApplicationStart
+  # deployment lifecycle event to restart services that were stopped
+  # during ApplicationStop.
+  #
+  ApplicationStart:
+    - location: scripts/application_start.sh
+      runas: root
+      timeout: 120
+
+  #
+  # ValidateService - ValidateService is the last deployment lifecycle
+  # event and is an opportunity to verify that the deployment
+  # completed successfully.
+  #
+  ValidateService:
+    - location: scripts/validate.sh
+      runas: root
+      timeout: 120
+
+  #
+  # ApplicationStop - this is the first deployment lifecycle event
+  # that occurs even before the application revision gets
+  # downloaded. You can use the ApplicationStop deployment lifecycle
+  # event if you want to gracefully stop the application or remove
+  # currently installed packages in preparation of a deployment.
+  #
+  # The AppSpec file and scripts used for this deployment lifecycle
+  # event are from the last successfully deployed application
+  # revision.
+  #
+  ApplicationStop:
+    - location: scripts/restart_server.sh
+      timeout: 120
